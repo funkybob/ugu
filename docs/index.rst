@@ -17,6 +17,8 @@ directory structure::
     +- venv/ - our virtualenv
     +- uwsgi.ini
 
+We'll start in the project directory.
+
 Our app
 -------
 
@@ -26,8 +28,17 @@ For demonstration purposes, we'll start with a minimal WSGI app.
    :caption: code/app.py
 
    def application(env, start_response):
-       start_response('200 OK', [('Content-Type', 'text/plain')])
-       yield b'Welcome!'
+       start_response('200 OK', [('Content-Type', 'text/html')])
+       yield b'''
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title> Welcome! </title>
+      </head>
+      <body>
+        <p> Welcome! </p>
+      </body>
+    </html>'''
 
 Virtualenv
 ----------
@@ -242,6 +253,11 @@ And we can launch using it:
 
    $ uwsgi --ini uwsgi.ini
 
+As a precaution we're going to add `strict = true` to the start.  Normally
+uWSGI allows you to define variables to use later in your config file, but this
+opens the possibility of typos in option names being silently ignored.  Setting
+strict mode disables this feature, and prevents these mistakes.
+
 Scaling
 -------
 
@@ -263,6 +279,7 @@ worker.
    :emphasize-lines: 3
 
    [uwsgi]
+   strict = true
    master = true
    http = :8000
    pythonpath = code/
@@ -302,6 +319,7 @@ compressed.
    :emphasize-lines: 8
 
    [uwsgi]
+   strict = true
    master = true
    http = :8000
    pythonpath = code/
@@ -345,6 +363,7 @@ enable `http keepalive`, then we allow `auto gzip`.
    :linenos:
 
    [uwsgi]
+   strict = true
    master = true
    http = :8000
    http-keepalive = true
@@ -365,6 +384,7 @@ run some simple logic before and after requests.
    :linenos:
 
    [uwsgi]
+   strict = true
    master = true
    http = :8000
    http-keepalive = true
@@ -398,6 +418,9 @@ Now in the startup output you'll see:
    [rule: 0] subject: ${RESPONSE_CONTENT_TYPE};application/json func: equal action: addheader:uWSGI-Encoding: gzip
    [rule: 1] subject: ${RESPONSE_CONTENT_TYPE};text/html func: startswith action: addheader:uWSGI-Encoding: gzip
    *** end of the internal response routing table ***
+
+If you now check the response headers you'll see our new header and, for the
+right content, a ``Content-Encoding: gzip`` header.
 
 Task management
 ---------------
