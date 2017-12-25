@@ -343,6 +343,23 @@ compressed.
    check-static = static/
    static-gzip-all = true
 
+Now you can compress all your static assets with the following command:
+
+.. code-block:: bash
+
+   $ find static/ -name "*.css" -exec gzip -9k \+
+
+And repeat the same command for \*.js and any other files you want compressed.
+
+.. note::
+   As of the 2.0.16 release of uWSGI it also supports Brotli compression,
+   selecting it over gzip if supported by the browser.
+
+.. note::
+   There are other tools which can provide gzip compatible files but compress
+   better than gzip. These include `advdef` from the AdvanceCOMP suite, and
+   `zopfli` from Google.
+
 How much difference does it make?
 
 For an example, let's try a copy of Bootstrap's CSS. I've grabbed the minified
@@ -359,6 +376,10 @@ get good compression, without taking too long.
 | gzip -6           |  19610 |
 +-------------------+--------+
 | gzip -9           |  19453 |
++-------------------+--------+
+| advdef -z4        |  18325 |
++-------------------+--------+
+| zopfli            |  18302 |
 +-------------------+--------+
 
 As you can see, the improvement drops off quickly. But since we're compressing
