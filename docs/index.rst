@@ -495,6 +495,7 @@ And we'll need to add a socket to our app process:
 .. code-block:: ini
    :caption: uwsgi.ini
    :linenos:
+   :emphasize-lines: 5
 
    [uwsgi]
    strict = true
@@ -518,6 +519,7 @@ The final step is to tell the HTTP worker to pass requests on to our app.
 .. code-block:: ini
    :caption: http.ini
    :linenos:
+   :emphasize-lines: 8
 
    [uwsgi]
    strict = true
@@ -680,13 +682,66 @@ for any reason the Emperor will re-launch them, with controls to fail them if
 they respawn too often. Also, if their config files go away for any reason, the
 Emperor will stop the vassal.
 
+Logging
+-------
+
+To help keep track of which task is writing what, let's send our logging to
+files.
+
+.. code-block:: ini
+   :caption: http.ini
+   :linenos:
+   :emphasize-lines: 4,13-14
+
+   [uwsgi]
+   strict = true
+   master = true
+   chdir = %d
+
+   http = :8000
+   http-keepalive = true
+   http-auto-gzip = true
+   http-to = 127.0.0.1:8001
+
+   processes = 0
+
+   req-logger = file:logs/request.log
+   logger = file:logs/uwsgi.log
+
+First we use the ``chdir`` option sets the current working directory. uWSGI
+translates ``%d`` to the directory of the config file.
+
+Next we add the ``req-logger`` option to log requests to one file, and
+``logger`` to log other messages to another.
+
 Task management
 ---------------
 
-.. external daemons
+Now that things are growing, it's probably time to reorganise a little.
+
+Actually, we're going to keep the same basic directory structure, but add
+another layer on top, so we can keep our uWSGI configs separate::
+
+   /srv/www/
+   +- http/
+   |  +- logs/
+   |  +- uwsgi.ini
+   +- project/
+      +- code/ - our application code
+      +- static/ - our static assets (JS, CSS, images, etc.)
+      +- logs/
+      +- venv/ - our virtualenv
+      +- uwsgi.ini
+
+We're using /srv/www because the /srv/ space is guaranteed to not be used by
+the Linux Filesystem Hierarchy Standard. Now we can configure ``--emperor`` to
+use ``/srv/www/*/uwsgi.ini``.
 
 Caching
 -------
 
 Job queues
 ----------
+
+External daemons
+----------------
