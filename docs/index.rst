@@ -250,6 +250,11 @@ Now at the end of our statup, we'll see:
 
    spawned 1 offload threads for uWSGI worker 1
 
+and a request for our CSS file will yield:
+
+.. code-block:: none
+   :linenos:
+
    [pid: 23783|app: -1|req: -1/3] 127.0.0.1 () {38 vars in 773 bytes} [Sun Dec 24 21:35:11 2017] GET /base.css => generated 79 bytes in 0 msecs via offload() (HTTP/1.1 200) 3 headers in 109 bytes (0 switches on core 0)
 
 You'll notice in the log lines it says "via offload()" to let us know it
@@ -294,15 +299,16 @@ Scaling
 
 So now we have uWSGI serving our static assets, and running our web app. Great!
 
-This works great, but with only one worker that will quickly stop being able to
-handle a busy site.
+This works great, but with only one worker we can only handle one request at a
+time, and that will quickly stop being able to handle a busy site.
 
 The first steps to scaling are to increase the number of processes and/or
 threads running as workers.
 
-In uWSGI this is a matter of specifying ``--processes`` and ``--threads``. Each
-process will run as many threads as we specify. Additionally, we can use the
-``--cheaper`` option to scale down processes when we're not busy.
+In uWSGI this is a matter of specifying ``--processes`` and ``--threads``,
+respectively. Each process will run as many threads as we specify.
+Additionally, we can use the ``--cheaper`` option to scale down processes when
+we're not busy.
 
 .. code-block:: ini
    :caption: uwsgi.ini
@@ -326,6 +332,9 @@ process will run as many threads as we specify. Additionally, we can use the
 
 .. note::
    Adding a ``threads`` setting implicitly sets ``enable-threads``.
+
+This will run at least 1, and up to 4, processes, each with 2 threads, allowing
+for a maximum of 8 concurrent requests.
 
 For even greater flexibility, we can move the HTTP handling out into its own
 worker. So instead of ``http-socket`` we're now going to use ``http``.
@@ -359,6 +368,9 @@ Now you'll see at the end of the startup:
    spawned uWSGI worker 1 (pid: 25198, cores: 2)
    spawned 1 offload threads for uWSGI worker 1
    spawned uWSGI http 1 (pid: 25200)
+
+We can even scale the number of HTTP workers independantly, using the
+``--http-processes`` option.
 
 Compressed content
 ------------------
