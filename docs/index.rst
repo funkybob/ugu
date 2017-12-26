@@ -11,7 +11,7 @@ thus:
     The uWSGI project aims at developing a full stack for building hosting
     services.
 
-Modern web apps tend to be composed of several parts::
+Modern web apps tend to be composed of several parts:
 
 - a Web server, to handle static content
 - an App server, to do the "work"
@@ -211,7 +211,7 @@ Web server
 Now we need something to serve the static assets of our project - the CSS, JS,
 images, and so on.
 
-Fortunately, uWSGI provides a built in helper for this: check-static.
+Fortunately, uWSGI provides a built in helper for this: ``--check-static``.
 
 We just need to specify where to look for the static assets, and uWSGI will
 check every request to see if a file exists.
@@ -237,7 +237,8 @@ processing our app. Once again, uWSGI has a solution: offload threads.
 
 We can ask uWSGI to start one or more threads per worker task to handle
 "offload" work. The easiest of which is serving static content. This is done
-efficiently, asynchronously, and in a way that doesn't block our app workers.
+using an event driven, asynchronous system that allows for a lot of
+concurrency, and in a way that doesn't block our app workers.
 
 .. code-block:: bash
 
