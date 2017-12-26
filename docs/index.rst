@@ -160,7 +160,7 @@ to talk HTTP on that socket:
    spawned uWSGI master process (pid: 23058)
    spawned uWSGI worker 1 (pid: 23059, cores: 1)
 
-At the end you can see now the master process _and_ a worker were launched.
+At the end you can see now the master process `and` a worker were launched.
 
 `ModuleNotFoundError`? Ah, that's because our code is in the ``code``
 subdirectory. Let's add that to Python's search path:
