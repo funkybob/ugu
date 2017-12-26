@@ -770,10 +770,10 @@ their logging) in separate directories. Let's move the http config into
    |  +- logs/
    |  +- uwsgi.ini
    +- project/
-      +- code/ - our application code
-      +- static/ - our static assets (JS, CSS, images, etc.)
+      +- code/
+      +- static/
       +- logs/
-      +- venv/ - our virtualenv
+      +- venv/
       +- uwsgi.ini
 
 Now we can configure ``--emperor`` to look for ini files as ``/srv/www/*/uwsgi.ini``.
