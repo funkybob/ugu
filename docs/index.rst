@@ -7,22 +7,23 @@ Intro
 In this tutorial we're going to progressively construct a configuration for
 uWSGI to serve our web app reliably and efficiently.
 
-For reasons that should become clear, we're going to work with the following
-directory structure::
+Modern web apps tend to be composed of several parts::
 
-    project/
-    +- code/ - our application code
-    +- static/ - our static assets (JS, CSS, images, etc.)
-    +- logs/
-    +- venv/ - our virtualenv
-    +- uwsgi.ini
+- a Web server, to handle static content
+- an App server, to do the "work"
+- a Cache for helping performance
+- a Task Queue for jobs that the user doesn't need to wait for.
 
-We'll start in the project directory.
+So let's create a directory for our work to live in. We're going to create
+``/srv/www/project``. The Linux Filesystem Hierarchy Standard proscribes
+distributions from using the ``/sys`` namespace, so we know our work won't be
+overwritten by package updates.
 
 Our app
 -------
 
-For demonstration purposes, we'll start with a minimal WSGI app.
+For demonstration purposes, we'll start with a minimal WSGI app, which we'll
+put in a subdirectory called ``code/``:
 
 .. code-block:: python
    :caption: code/app.py
@@ -34,6 +35,7 @@ For demonstration purposes, we'll start with a minimal WSGI app.
     <html>
       <head>
         <title> Welcome! </title>
+        <link rel="stylesheet" type="text/css" href="base.css">
       </head>
       <body>
         <p> Welcome! </p>
@@ -71,7 +73,7 @@ Now we'll install uWSGI
 App server
 ----------
 
-Let's try to launch a uWSGI instance running our code.  We can start with:
+Let's try to launch a uWSGI instance running our code. We can start with:
 
 .. code-block:: bash
 
@@ -108,7 +110,7 @@ controls the worker tasks, restarting them when they stop, among other things.
 This is enabled with the ``--master`` option.
 
 Next, the last message before it bails out is about a missing socket option.
-So, we need to specify a socket for uWSGI to listen to.  For now we'll tell it
+So, we need to specify a socket for uWSGI to listen to. For now we'll tell it
 to talk HTTP on that socket:
 
 .. code-block:: bash
@@ -137,10 +139,10 @@ to talk HTTP on that socket:
    spawned uWSGI master process (pid: 23058)
    spawned uWSGI worker 1 (pid: 23059, cores: 1)
 
-You can see now the master process _and_ a worker were launched.
+At the end you can see now the master process _and_ a worker were launched.
 
 `ModuleNotFoundError`? Ah, that's because our code is in the ``code``
-subdirectory.  Let's add that to Python's search path:
+subdirectory. Let's add that to Python's search path:
 
 .. code-block:: bash
 
@@ -150,7 +152,7 @@ And we should see output like this:
 
 .. code-block:: none
    :linenos:
-   :emphasize-lines: 4,11
+   :emphasize-lines: 4,10-11
 
    *** Starting uWSGI 2.0.15 (64bit) on [Sun Dec 24 21:23:54 2017] ***
    ...
@@ -167,16 +169,15 @@ And we should see output like this:
    spawned uWSGI master process (pid: 23197)
    spawned uWSGI worker 1 (pid: 23198, cores: 1)
 
-
-Next warning is about "Python threads support is disabled".  For any case where
+Next warning is about "Python threads support is disabled". For any case where
 you are running only a single thread, Python can work a little faster with this
-disabled.  In most cases, however, we want to enable it using the
+disabled. In most cases, however, we want to enable it using the
 ``--enable-threads`` option, as mentioned.
 
 Finally, it has created our WSGI app, and started a worker task to handle
 requests.
 
-If we point our browser at http://127.0.0.1:8000 we should get our message
+If we point our browser at http://127.0.0.1:8000/ we should get our message
 back, and see a message logged by uwsgi:
 
 .. code-block:: none
@@ -194,11 +195,7 @@ Fortunately, uWSGI provides a built in helper for this: check-static.
 We just need to specify where to look for the static assets, and uWSGI will
 check every request to see if a file exists.
 
-.. code-block:: bash
-
-   $ uwsgi --master --http-socket :8000 --pythonpath code/ --module app --check-static static/
-
-Let's add the start of a CSS file into static/
+Let's create a ``static/`` directory in our project, and start a CSS file in there:
 
 .. code-block:: css
    :caption: static/base.css
@@ -206,13 +203,20 @@ Let's add the start of a CSS file into static/
    html { box-sizing: border-box }
    *, *:before, *:after { box-sizing: inherit; }
 
-Now let's see if it gets served.  Visit http://127.0.0.1:8000/base.css
+And we can ask uWSGI to check there like this:
+
+.. code-block:: bash
+
+   $ uwsgi --master --http-socket :8000 --pythonpath code/ --module app --check-static static/
+
+Now let's see if it gets served. Visit http://127.0.0.1:8000/base.css
 
 However, this means one of our workers is busy handling this, instead of
-processing our app.  Once again, uWSGI has a solution: offload threads.
+processing our app. Once again, uWSGI has a solution: offload threads.
 
-We can ask uWSGI to start one or more threads to handle "offload" work. The
-easiest of which is serving static content.
+We can ask uWSGI to start one or more threads per worker task to handle
+"offload" work. The easiest of which is serving static content. This is done
+efficiently, asynchronously, and in a way that doesn't block our app workers.
 
 .. code-block:: bash
 
@@ -240,33 +244,36 @@ INI file to manage our configuration:
    :linenos:
 
    [uwsgi]
-   ; run master process
    master = true
-   ; talk HTTP on port 8000
+
    http-socket = :8000
-   ; Python settings
+
    pythonpath = code/
    module = app
-   ; serve static assets
+
    check-static = static/
    offload-threads = 1
 
-And we can launch using it:
+I like to keep things grouped by purpose.
+
+Now we can launch it using:
 
 .. code-block:: bash
 
    $ uwsgi --ini uwsgi.ini
 
-As a precaution we're going to add `strict = true` to the start.  Normally
+As a precaution we're going to add `strict = true` to the start. Normally
 uWSGI allows you to define variables to use later in your config file, but this
-opens the possibility of typos in option names being silently ignored.  Setting
+opens the possibility of typos in option names being silently ignored. Setting
 strict mode disables this feature, and prevents these mistakes.
 
 Scaling
 -------
 
-This works great if we have just one worker task, but that will quickly stop
-being able to handle a busy site.
+So now we have uWSGI serving our static assets, and running our web app. Great!
+
+This works great, but with only one worker that will quickly stop being able to
+handle a busy site.
 
 The first steps to scaling are to increase the number of processes and/or
 threads running as workers.
@@ -275,20 +282,16 @@ In uWSGI this is a matter of specifying ``--processes`` and ``--threads``. Each
 process will run as many threads as we specify. Additionally, we can use the
 ``--cheaper`` option to scale down processes when we're not busy.
 
-For even greater flexibility, we can move the HTTP handling out into its own
-worker.
-
 .. code-block:: ini
    :caption: uwsgi.ini
    :linenos:
-   :emphasize-lines: 5
+   :emphasize-lines: 6-8
 
    [uwsgi]
    strict = true
    master = true
-   ; run http thread
-   http = :8000
-   ; run from 1 to 4 processes, with 2 threads each
+
+   http-socket = :8000
    processes = 4
    cheaper = 1
    threads = 2
@@ -299,7 +302,31 @@ worker.
    check-static = static/
    offload-threads = 1
 
-So instead of ``http-socket`` we're now using ``http``.
+.. note::
+   Adding a ``threads`` setting implicitly sets ``enable-threads``.
+
+For even greater flexibility, we can move the HTTP handling out into its own
+worker. So instead of ``http-socket`` we're now going to use ``http``.
+
+.. code-block:: ini
+   :caption: uwsgi.ini
+   :linenos:
+   :emphasize-lines: 5
+
+   [uwsgi]
+   strict = true
+   master = true
+
+   http = :8000
+   processes = 4
+   cheaper = 1
+   threads = 2
+
+   pythonpath = code/
+   module = app
+
+   check-static = static/
+   offload-threads = 1
 
 Now you'll see at the end of the startup:
 
@@ -307,7 +334,7 @@ Now you'll see at the end of the startup:
 
    *** uWSGI is running in multiple interpreter mode ***
    spawned uWSGI master process (pid: 25196)
-   spawned uWSGI worker 1 (pid: 25198, cores: 1)
+   spawned uWSGI worker 1 (pid: 25198, cores: 2)
    spawned 1 offload threads for uWSGI worker 1
    spawned uWSGI http 1 (pid: 25200)
 
@@ -335,6 +362,9 @@ compressed.
    master = true
 
    http = :8000
+   processes = 4
+   cheaper = 1
+   threads = 2
 
    pythonpath = code/
    module = app
@@ -347,9 +377,7 @@ Now you can compress all your static assets with the following command:
 
 .. code-block:: bash
 
-   $ find static/ -name "*.css" -exec gzip -9k \+
-
-And repeat the same command for \*.js and any other files you want compressed.
+   $ find static/ -name "*.css" -o -name "*.js" -exec gzip -9fk \+
 
 .. note::
    As of the 2.0.16 release of uWSGI it also supports Brotli compression,
@@ -407,6 +435,10 @@ enable `http keepalive`, then we allow `auto gzip`.
    http-keepalive = true
    http-auto-gzip = true
 
+   processes = 4
+   cheaper = 1
+   threads = 2
+
    pythonpath = code/
    module = app
 
@@ -417,8 +449,8 @@ enable `http keepalive`, then we allow `auto gzip`.
 However, this isn't quite enough yet. We need to add a header to compressible
 responses to tell the HTTP worker we want it compressed.
 
-For this, we're going to use uWSGI's internal routing feature.  This lets us
-run some simple logic before and after requests.
+For this, we're going to use uWSGI's internal routing feature. This lets us run
+some simple logic before and after requests.
 
 .. code-block:: ini
    :caption: uwsgi.ini
@@ -432,6 +464,10 @@ run some simple logic before and after requests.
    http = :8000
    http-keepalive = true
    http-auto-gzip = true
+
+   processes = 4
+   cheaper = 1
+   threads = 2
 
    pythonpath = code/
    module = app
@@ -471,12 +507,14 @@ right content, a ``Content-Encoding: gzip`` header.
 Reliability
 -----------
 
-So far, things are looking good.  But remember the old saying about putting all
+So far, things are looking good. But remember the old saying about putting all
 our eggs in one basket?
 
-If we want our site to be more reliable, we want to split up our jobs to avoid a `single point of failure`.
+If we want our site to be more reliable, we want to split up our jobs to avoid
+a `single point of failure`.
 
-Our first and easiest step is to move the HTTP worker into its own uWSGI instance:
+Our first and easiest step is to move the HTTP worker into its own uWSGI
+instance:
 
 .. code-block:: ini
    :caption: http.ini
@@ -502,6 +540,10 @@ And we'll need to add a socket to our app process:
    master = true
 
    socket = 127.0.0.1:8001
+
+   processes = 4
+   cheaper = 1
+   threads = 2
 
    pythonpath = code/
    module = app
@@ -686,7 +728,7 @@ Logging
 -------
 
 To help keep track of which task is writing what, let's send our logging to
-files.
+files in a ``logs/`` subdirectory.
 
 .. code-block:: ini
    :caption: http.ini
@@ -719,8 +761,9 @@ Task management
 
 Now that things are growing, it's probably time to reorganise a little.
 
-Actually, we're going to keep the same basic directory structure, but add
-another layer on top, so we can keep our uWSGI configs separate::
+Since we're going to be running two services, we might as well keep them (and
+their logging) in separate directories. Let's move the http config into
+``/srv/www/http/``, and, for consistency, call it ``uwsgi.ini``::
 
    /srv/www/
    +- http/
@@ -733,9 +776,7 @@ another layer on top, so we can keep our uWSGI configs separate::
       +- venv/ - our virtualenv
       +- uwsgi.ini
 
-We're using /srv/www because the /srv/ space is guaranteed to not be used by
-the Linux Filesystem Hierarchy Standard. Now we can configure ``--emperor`` to
-use ``/srv/www/*/uwsgi.ini``.
+Now we can configure ``--emperor`` to look for ini files as ``/srv/www/*/uwsgi.ini``.
 
 Caching
 -------
