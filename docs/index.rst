@@ -5,7 +5,11 @@ Intro
 -----
 
 In this tutorial we're going to progressively construct a configuration for
-uWSGI to serve our web app reliably and efficiently.
+uWSGI to serve our web app reliably and efficiently. uWSGI describes itself
+thus:
+
+    The uWSGI project aims at developing a full stack for building hosting
+    services.
 
 Modern web apps tend to be composed of several parts::
 
@@ -13,6 +17,8 @@ Modern web apps tend to be composed of several parts::
 - an App server, to do the "work"
 - a Cache for helping performance
 - a Task Queue for jobs that the user doesn't need to wait for.
+
+uWSGI can provide all of this, and a lot more!
 
 So let's create a directory for our work to live in. We're going to create
 ``/srv/www/project``. The Linux Filesystem Hierarchy Standard proscribes
@@ -61,9 +67,15 @@ packages.
 Install
 -------
 
-Now we'll install uWSGI
+Now we'll install uWSGI. To get all the features we want, we'll need to ensure
+we have the development headers for a number of packages already installed. On
+Debian like platforms this is done as follows:
 
-.. dependencies
+.. code-block:: bash
+
+   $ sudo apt-get install libpcre3-dev zlib1g-dev python3-dev
+
+And now we can use ``pip`` to install uWSGI itself:
 
 .. code-block:: bash
 
@@ -381,7 +393,8 @@ Now you can compress all your static assets with the following command:
 
 .. note::
    As of the 2.0.16 release of uWSGI it also supports Brotli compression,
-   selecting it over gzip if supported by the browser.
+   selecting it over gzip if supported by the browser. It is enabled by the
+   ``static-gzip-all`` flag, also.
 
 .. note::
    There are other tools which can provide gzip compatible files but compress
