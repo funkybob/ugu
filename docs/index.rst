@@ -786,7 +786,9 @@ files in a ``logs/`` subdirectory.
    logger = file:logs/uwsgi.log
 
 First we use the ``chdir`` option sets the current working directory. uWSGI
-translates ``%d`` to the directory of the config file.
+translates ``%d`` to the directory of the config file. There are a number of
+other `Magic Variable` that uWSGI undestands, as documented `here
+<http://uwsgi-docs.readthedocs.io/en/latest/Configuration.html#magic-variables>`_.
 
 Next we add the ``req-logger`` option to log requests to one file, and
 ``logger`` to log other messages to another.
@@ -812,6 +814,41 @@ their logging) in separate directories. Let's move the http config into
       +- uwsgi.ini
 
 Now we can configure ``--emperor`` to look for ini files as ``/srv/www/*/uwsgi.ini``.
+
+If we now look at our process list, you may notice quicky that we can't tell
+which one is our HTTP worker, and which is our App! One again, uWSGI provides,
+with a series of options to control the process name (or `procname`)::
+
+    --procname-prefix                      add a prefix to the process names
+    --procname-prefix-spaced               add a spaced prefix to the process names
+    --procname-append                      append a string to process names
+    --procname                             set process names
+    --procname-master                      set master process name
+    --emperor-procname                     set the Emperor process name
+
+To make our lives easier, we can use another `Magic Variable` to set the name
+for us: %c - the name of the directory containing the config file.
+
+.. code-block:: ini
+   :caption: http.ini
+   :linenos:
+   :emphasize-lines: 6
+
+   [uwsgi]
+   strict = true
+   master = true
+   chdir = %d
+
+   procname-prefix = %c
+   http = :8000
+   http-keepalive = true
+   http-auto-gzip = true
+   http-to = 127.0.0.1:8001
+
+   processes = 0
+
+   req-logger = file:logs/request.log
+   logger = file:logs/uwsgi.log
 
 Caching
 -------
