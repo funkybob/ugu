@@ -411,7 +411,7 @@ Now you can compress all your static assets with the following command:
 
 .. code-block:: bash
 
-   $ find static/ -name "*.css" -o -name "*.js" -exec gzip -9fk \+
+   $ find static/ -name "*.css" -o -name "*.js" -exec gzip -9fk {} \+
 
 .. note::
    As of the 2.0.16 release of uWSGI it also supports Brotli compression,
