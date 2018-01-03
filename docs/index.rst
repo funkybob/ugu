@@ -38,6 +38,7 @@ Let's get started!
    emperor
    logging
    https
+   security
    tasks
    caching
    jobq
