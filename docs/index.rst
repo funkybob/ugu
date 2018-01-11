@@ -44,3 +44,5 @@ Let's get started!
    jobq
    daemon
    thanks
+
+   appendix/index
