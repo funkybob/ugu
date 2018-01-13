@@ -21,3 +21,4 @@ your own user.
    # chown myuser:myuser /srv/www/project
 
 It's become fashionable these days to use ``sudo`` instead of ``su`` to root.
+You can use this if you feel more comfortable with it.

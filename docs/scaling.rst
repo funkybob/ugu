@@ -75,4 +75,5 @@ Now you'll see at the end of the startup:
    spawned uWSGI http 1 (pid: 25200)
 
 We can even scale the number of HTTP workers independantly, using the
-``--http-processes`` option.
+``--http-processes`` option, though a single worker process should be able to
+handle quite a large number of concurrent requests.

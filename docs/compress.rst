@@ -6,16 +6,16 @@ Compressed content
 Static Content
 --------------
 
-To speed up transmission, it's common to compress our data. When it comes to
-our static assets, we can spend some extra time once to compress it heavily,
-and serve it pre-compressed, instead of spending the effort to compress it
-every time we serve it.
+To speed up transmission, thus reducing load times, it's common to compress
+our data. When it comes to our static assets, we can spend some extra time to
+compress it heavily once, and serve it pre-compressed, instead of spending the
+effort to compress it every time we serve it.
 
 The simplest way to get uWSGI to do this is with the `static-gzip-all` option,
 which will mean any time we're serving static assets, if the browser supports
-it uWSGI will check if there is the same filename with a ``.gz`` extension. If
-there is, it will serve that instead, with the headers to tell the browser it's
-compressed.
+it, uWSGI will check if there is the same filename with a ``.gz`` extension.
+If there is, it will serve that instead, with the headers to tell the browser
+it's compressed.
 
 .. code-block:: ini
    :caption: uwsgi.ini
@@ -85,8 +85,11 @@ Compressing dynamic content
 
 So this takes care of our static assets, but what about our dynamic content?
 
-In this case, we can easily ask our HTTP worker do handle this for us. First we
-enable `http keepalive`, then we allow `auto gzip`.
+In this case, we can easily ask our HTTP worker do handle this for us - after
+all, all our responses will go through it anyway, and having a separate
+process do it frees up our app workers sooner.
+
+First we enable `http keepalive`, then we allow `auto gzip`.
 
 .. code-block:: ini
    :caption: uwsgi.ini
@@ -112,8 +115,9 @@ enable `http keepalive`, then we allow `auto gzip`.
    check-static = static/
    static-gzip-all = true
 
-However, this isn't quite enough yet. We need to add a header to compressible
-responses to tell the HTTP worker we want it compressed.
+However, this isn't quite enough yet. uWSGI won't jsut attempt to compress all
+responses. We need to add a header to compressible responses to tell the HTTP
+worker we want it compressed.
 
 For this, we're going to use uWSGI's internal routing feature. This lets us run
 some simple logic before and after requests.
@@ -149,7 +153,7 @@ some simple logic before and after requests.
 These three lines do as follows:
 
 1. Instruct uWSGI to copy the `Content-Type` header from the response into a
-   variable called `RESPONSE_CONTENT_TYPE`.
+   variable we've called `RESPONSE_CONTENT_TYPE`.
 2. Test if the new variable equals `application/json`, and if so add a new
    header.
 3. Test if the new variable contains `text/html`, and if so add a new header.
@@ -169,3 +173,10 @@ Now in the startup output you'll see:
 
 If you now check the response headers you'll see our new header and, for the
 right content, a ``Content-Encoding: gzip`` header.
+
+This all leaves the ``uWSGI-Encoding`` header in the resposne. If you want to
+remove this we can add the routing line after the others:
+
+.. code-block:: ini
+
+   response-route-run = delheader:uWSGI-Encoding

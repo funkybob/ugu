@@ -26,9 +26,10 @@ Now we can launch it using:
 
 .. code-block:: bash
 
-   $ uwsgi --ini uwsgi.ini
+   (venv)$ uwsgi --ini uwsgi.ini
 
 As a precaution we're going to add `strict = true` to the start. Normally
-uWSGI allows you to define variables to use later in your config file, but this
-opens the possibility of typos in option names being silently ignored. Setting
-strict mode disables this feature, and prevents these mistakes.
+uWSGI allows you to define variables to use later in your config file, but as
+the syntax is exactly the same as setting a config option this opens the
+possibility of typos in option names being silently ignored. Setting strict
+mode disables this feature, and prevents these mistakes.

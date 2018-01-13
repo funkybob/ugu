@@ -6,7 +6,7 @@ Let's try to launch a uWSGI instance running our code. We can start with:
 
 .. code-block:: bash
 
-   $ uwsgi --module app
+   (venv)$ uwsgi --module app
 
 And will see output like:
 
@@ -44,7 +44,7 @@ to talk HTTP on that socket:
 
 .. code-block:: bash
 
-   $ uwsgi --master --http-socket :8000 --module app
+   (venv)$ uwsgi --master --http-socket :8000 --module app
 
 .. code-block:: none
    :linenos:
@@ -75,7 +75,7 @@ subdirectory. Let's add that to Python's search path:
 
 .. code-block:: bash
 
-   $ uwsgi --master --http-socket :8000 --pythonpath code/ --module app
+   (venv)$ uwsgi --master --http-socket :8000 --pythonpath code/ --module app
 
 And we should see output like this:
 

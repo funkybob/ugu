@@ -3,7 +3,7 @@ Stability & Reliability
 -----------------------
 
 So far, things are looking good. But remember the old saying about putting all
-our eggs in one basket?
+your eggs in one basket?
 
 If we want our site to be more reliable, we want to split up our jobs to avoid
 a `single point of failure`.

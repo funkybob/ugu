@@ -22,7 +22,7 @@ And we can ask uWSGI to check there like this:
 
 .. code-block:: bash
 
-   $ uwsgi --master --http-socket :8000 --pythonpath code/ --module app --check-static static/
+   (venv)$ uwsgi --master --http-socket :8000 --pythonpath code/ --module app --check-static static/
 
 Now let's see if it gets served. Visit http://127.0.0.1:8000/base.css
 
@@ -36,7 +36,7 @@ concurrency, and in a way that doesn't block our app workers.
 
 .. code-block:: bash
 
-   $ uwsgi --master --http-socket :8000 --pythonpath code/ --module app --check-static static/ --offload-threads 1
+   (venv)$ uwsgi --master --http-socket :8000 --pythonpath code/ --module app --check-static static/ --offload-threads 1
 
 Now at the end of our statup, we'll see:
 
@@ -47,7 +47,6 @@ Now at the end of our statup, we'll see:
 and a request for our CSS file will yield:
 
 .. code-block:: none
-   :linenos:
 
    [pid: 23783|app: -1|req: -1/3] 127.0.0.1 () {38 vars in 773 bytes} [Sun Dec 24 21:35:11 2017] GET /base.css => generated 79 bytes in 0 msecs via offload() (HTTP/1.1 200) 3 headers in 109 bytes (0 switches on core 0)
 

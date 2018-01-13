@@ -2,15 +2,18 @@
 Emperor
 -------
 
-So now we need to run two uWSGI processes. This isn't such a big deal, but simpler is more reliable, too.
+So now we need to run two uWSGI processes. This isn't such a big deal, but
+simpler is more reliable, too.
 
-uWSGI provides what's called ``Emperor`` mode. This is where we tell a uWSGI instance how to find uWSGI config files, and when it finds one it will launch and manage a new uWSGI instance running with that config.
+uWSGI provides what's called ``Emperor`` mode. This is where we tell a uWSGI
+instance how to find uWSGI config files, and when it finds one it will launch
+and manage a new uWSGI instance running with that config.
 
 Let's try it with the simple command line:
 
 .. code-block:: bash
 
-   $ uwsgi --master --emperor "*.ini"
+   (venv)$ uwsgi --master --emperor "*.ini"
 
 .. note::
    We need the quotes, otherwise the shell will expand \*.ini to all the ini
@@ -111,7 +114,7 @@ Let's try it with the simple command line:
    Mon Dec 25 11:50:35 2017 - [emperor] vassal uwsgi.ini is ready to accept requests
 
 This is quite a mess! But if you read carefully, you'll see the Emperor has
-started, and launched two `vassal` instances. Should either of the tasks fail
+started, then launched two `vassal` instances. Should either of the tasks fail
 for any reason the Emperor will re-launch them, with controls to fail them if
 they respawn too often. Also, if their config files go away for any reason, the
 Emperor will stop the vassal.
