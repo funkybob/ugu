@@ -80,8 +80,8 @@ As you can see, the improvement drops off quickly. But since we're compressing
 it once, and serving it repeatedly, we can spend all the time we like
 compressing it.
 
-Compressing dynamic content
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Dynamic content
+---------------
 
 So this takes care of our static assets, but what about our dynamic content?
 
