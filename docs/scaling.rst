@@ -42,7 +42,8 @@ This will run at least 1, and up to 4, processes, each with 2 threads, allowing
 for a maximum of 8 concurrent requests.
 
 For even greater flexibility, we can move the HTTP handling out into its own
-worker. So instead of ``http-socket`` we're now going to use ``http``.
+worker, known as a FastRouter. So instead of ``http-socket`` we're now going to
+use ``http``.
 
 .. code-block:: ini
    :caption: uwsgi.ini
