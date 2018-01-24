@@ -215,9 +215,9 @@ FastRouter.
 To infinity, and beyond!
 ------------------------
 
-But what about redundancy, I hear you cry? We still have only one HTTP worker!
-As I hinted before, it's possible to have multiple subscribe-to lines in a
-single config. They don't have to be to the same subscription server.
+"But what about redundancy?", I hear you cry. "We still have only one HTTP
+worker!" As I hinted before, it's possible to have multiple subscribe-to lines
+in a single config. They don't have to be to the same subscription server.
 
 So we can set up two HTTP FastRouters, and have our per-worker-machine uWSGI
 FastRouters re-subscribe to _both_ of them.
