@@ -102,8 +102,6 @@ uWSGI is assuming we're going to run an app, and defaults to 1 worker process. S
 
    processes = 0
 
-
-----------------
 Scaling Further!
 ----------------
 
@@ -214,7 +212,6 @@ Well, instead of running a HTTP FastRouter as we have, we can run a uWSGI
 FastRouter on each worker box, and have it re-subscribe to our separate HTTP
 FastRouter.
 
-------------------------
 To infinity, and beyond!
 ------------------------
 
