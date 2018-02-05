@@ -20,7 +20,7 @@ it's compressed.
 .. code-block:: ini
    :caption: uwsgi.ini
    :linenos:
-   :emphasize-lines: 12
+   :emphasize-lines: 15
 
    [uwsgi]
    strict = true
