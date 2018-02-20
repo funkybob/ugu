@@ -101,7 +101,7 @@ First we enable `http keepalive`, then we allow `auto gzip`.
    master = true
 
    http = :8000
-   http-keepalive = true
+   http-keepalive = 1
    http-auto-gzip = true
 
    processes = 4
@@ -132,7 +132,7 @@ some simple logic before and after requests.
    master = true
 
    http = :8000
-   http-keepalive = true
+   http-keepalive = 1
    http-auto-gzip = true
 
    processes = 4

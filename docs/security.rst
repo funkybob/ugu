@@ -47,7 +47,7 @@ shared sockets.
    http = =0
    http-uid = www-data
    http-gid = www-data
-   http-keepalive = true
+   http-keepalive = 1
    http-auto-gzip = true
    http-to = 127.0.0.1:8001
 

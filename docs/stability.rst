@@ -20,7 +20,7 @@ instance:
    master = true
 
    http = :8000
-   http-keepalive = true
+   http-keepalive = 1
    http-auto-gzip = true
 
 And we'll need to add a socket to our app process:
@@ -63,7 +63,7 @@ The final step is to tell the HTTP worker to pass requests on to our app.
    master = true
 
    http = :8000
-   http-keepalive = true
+   http-keepalive = 1
    http-auto-gzip = true
    http-to = 127.0.0.1:8001
 
@@ -96,7 +96,7 @@ uWSGI is assuming we're going to run an app, and defaults to 1 worker process. S
    master = true
 
    http = :8000
-   http-keepalive = true
+   http-keepalive = 1
    http-auto-gzip = true
    http-to = 127.0.0.1:8001
 
@@ -127,7 +127,7 @@ address, and which domains they're capable of handling requests for.
    master = true
 
    http = :8000
-   http-keepalive = true
+   http-keepalive = 1
    http-auto-gzip = true
    http-subscription-server = :8001
 

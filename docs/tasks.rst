@@ -47,7 +47,7 @@ for us: %c - the name of the directory containing the config file.
 
    procname-prefix = %c
    http = :8000
-   http-keepalive = true
+   http-keepalive = 1
    http-auto-gzip = true
    http-to = 127.0.0.1:8001
 

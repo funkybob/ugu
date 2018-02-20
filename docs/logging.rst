@@ -15,7 +15,7 @@ files in a ``logs/`` subdirectory.
    chdir = %d
 
    http = :8000
-   http-keepalive = true
+   http-keepalive = 1
    http-auto-gzip = true
    http-to = 127.0.0.1:8001
 
