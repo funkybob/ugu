@@ -125,7 +125,7 @@ some simple logic before and after requests.
 .. code-block:: ini
    :caption: uwsgi.ini
    :linenos:
-   :emphasize-lines: 16-18
+   :emphasize-lines: 20-22
 
    [uwsgi]
    strict = true
